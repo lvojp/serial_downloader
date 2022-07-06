@@ -94,9 +94,9 @@ class SerialDownloader:
                 dest = f'{out}/{str(i + 1).zfill(zerofill)}{ext}'
                 try:
                     urllib.request.urlretrieve(url, dest)
-                except urllib.error.HTTPError as e:
+                except Exception as e:
                     retry += 1
-                    print(f'Download error: <{e}>')
+                    print(f'Download error: {e}')
                     print(f'Retry: {retry}/{self.max_retry}')
                     if retry > 2:
                         print('The number of retries has reached the maximum')
