@@ -9,11 +9,11 @@ from typing import List
 
 
 class SerialDownloader:
-    def __init__(self, url: str, out_dir: str, start: str):
+    def __init__(self, url: str, out_dir: str, start: str) -> None:
         p = pathlib.Path(url)
         self.target_dir = '/'.join(url.split('/')[:-1])
         self.start_num = self._get_start_num(start)
-        self.end_num = self._get_end_num(p.name)
+        self.end_num = self._get_file_num(p.name)
         self.prefix = self._get_prefix(p.name)
         self.suffix = self._get_suffix(p.name)
         self.extension = p.suffix
@@ -29,7 +29,7 @@ class SerialDownloader:
         result = int(start)
         return result
 
-    def _get_end_num(self, filename: str) -> int:
+    def _get_file_num(self, filename: str) -> int:
         pattern = r'\d+'
         try:
             match = re.search(pattern, filename)
@@ -57,6 +57,11 @@ class SerialDownloader:
             result = str(match.group(1))
             return result
 
+    def _get_file_idx_from_url(self, url: str) -> int:
+        filename = url.split('/')[-1]
+        result = self._get_file_num(filename)
+        return result
+
     def _make_serial_num_list(self) -> List[str]:
         start = self.start_num
         end = self.end_num
@@ -75,36 +80,42 @@ class SerialDownloader:
         return result
 
     def download(self, url_list: List[str]) -> None:
+        def make_opener() -> urllib.request:
+            result = urllib.request.build_opener()
+            result.addheaders = [(
+                'User-Agent',
+                'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/36.0.1941.0 Safari/537.36'
+            )]
+            return result
+
         out = self.out_dir
         ext = self.extension
         zerofill = self.zerofill
         os.makedirs(out, exist_ok=True)
-        opener = urllib.request.build_opener()
-        opener.addheaders = [(
-            'User-Agent',
-            'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/36.0.1941.0 Safari/537.36'
-        )]
-        urllib.request.install_opener(opener)
-        for i, url in enumerate(url_list):
+        urllib.request.install_opener(make_opener())
+        for url in url_list:
+            cfn = self._get_file_idx_from_url(url)
             retry = 0
             while True:
                 time.sleep(0.5)
-                print(f'Progress ... {i + 1}/{len(url_list)}')
-                dest = f'{out}/{str(i + 1).zfill(zerofill)}{ext}'
+                print(f'Progress ... {cfn}/{self.end_num}')
+                dest = f'{out}/{str(cfn).zfill(zerofill)}{ext}'
                 try:
                     urllib.request.urlretrieve(url, dest)
                 except Exception as e:
                     retry += 1
-                    print(f'Download error: {e}')
-                    print(f'Retry: {retry}/{self.max_retry}')
-                    if retry > 2:
+                    if retry > self.max_retry:
                         print('The number of retries has reached the maximum')
+                        print(f'Download failed: {url}')
                         break
+                    else:
+                        print(f'Download error: {e}')
+                        print(f'Retry: {retry}/{self.max_retry}')
                 else:
                     break
 
-    def main(self):
+    def main(self) -> None:
         try:
             snl = self._make_serial_num_list()
             url_list = self._make_url(snl)
@@ -117,8 +128,9 @@ class SerialDownloader:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Download the file saved with the serial number at once')
-    parser.add_argument('-u', '--url', required=True, help='Enter the URL of the last file of the serial numbered file')
-    parser.add_argument('-s', '--start_num', required=True, type=str, default=1,
+    parser.add_argument('-u', '--url', required=True, type=str,
+                        help='Enter the URL of the last file of the serial numbered file')
+    parser.add_argument('-s', '--start_num', required=True, type=str,
                         help='First file number of serial number file / example: -s001 or -s01')
     parser.add_argument('-o', '--output', required=True, type=str, help='Output destination directory')
 

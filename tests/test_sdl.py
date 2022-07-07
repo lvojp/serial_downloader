@@ -83,6 +83,13 @@ def test_get_end_num():
     assert sd.end_num == 500
 
 
+def test_get_file_idx_from_url():
+    out = '/tmp/sdl'
+    url = 'https://example.com/dir1-100/dir2-200/dir5000/prefix500suffix.pdf'
+    sd = SerialDownloader(url=url, out_dir=out, start='001')
+    assert sd._get_file_idx_from_url(url) == 500
+
+
 def test_get_extension():
     out = '/tmp/sdl'
     url = 'https://example.com/dir1-100/dir2-200/dir5000/prefix500suffix.pdf'
