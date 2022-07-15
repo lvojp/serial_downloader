@@ -135,10 +135,6 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', required=True, type=str, help='Output destination directory')
 
     args = parser.parse_args()
-    # print(f'url = {args.url}')
-    # print(f'start_num = {args.start_num}')
-    # print(f'output = {args.output}')
-
     url = args.url
     st = args.start_num
     out = args.output

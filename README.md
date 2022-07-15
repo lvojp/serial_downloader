@@ -1,12 +1,18 @@
-# serial_downloader
-Download the file saved with the serial number at once.
+# serial_downloader / sdl
+Download the files saved with the serial number at once.
 
 ## Getting Started
 
 Install Poetry and command ```poetry install```
 
-Introduction | Documentation | Poetry - Python dependency management and packaging made easy
-https://python-poetry.org/docs/
+(Introduction | Documentation | Poetry - Python dependency management and packaging made easy
+https://python-poetry.org/docs/)
+
+And run ```poetry run python src/sdl.py```
+
+Or
+
+Use the executable file ```dist/sdl```
 
 ## Usage
 To get help ```sdl.py -h```

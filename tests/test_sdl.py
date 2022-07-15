@@ -1,6 +1,5 @@
 import pickle
 import pytest
-import urllib.request
 from src.sdl import SerialDownloader
 
 
